@@ -1,0 +1,27 @@
+name: macOS
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          xcode-select -p
+          swift --version
+      - name: Format
+        run: xcrun swift-format lint --strict --recursive Sources Tests scripts/*.swift Package.swift
+      - name: Build and core checks
+        run: bash scripts/check.sh --xctest
+      - name: Read-session and offscreen layout checks
+        run: bash scripts/check-ui.sh
+      - name: Package universal app
+        run: bash scripts/build-app.sh --universal
